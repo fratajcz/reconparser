@@ -5,11 +5,11 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Run Crossvalidation Pipeline.')
 
-parser.add_argument('--input', "-i", type=str, default="Recon3D_301/Recon3D_301.mat",
+parser.add_argument('--input', "-i", type=str, default="../Recon3D_301/Recon3D_301.mat",
                     help='Path to the Recon3D matlab file.')
 parser.add_argument('--output', "-o", type=str, default="recon.tsv",
                     help='Path to store the edgelist file.')
-parser.add_argument('--blacklist', "-b", type=str, default="reconparser/blacklist_metabolites.txt",
+parser.add_argument('--blacklist', "-b", type=str, default="blacklist_metabolites.txt",
                     help='Path to store the edgelist file.')
 parser.add_argument('--filtered', "-f", type=str, default="filtered_metabolites.txt",
                     help='Path to store filtered metabolties list.')
