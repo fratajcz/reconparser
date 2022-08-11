@@ -15,13 +15,13 @@ The blacklist is used as prefixes, so ```h2o``` would also filter ```h2o2```, if
 ## Run Parser
 
 ```
-python3 parse_recon -i <path to recon .mat file> -o <path and filename of output edgelist> -b [OPTIONAL]<path to blacklist> -f [OPTIONAL]<path to list of filtered metabolties>
+python3 parse_recon.py -i <path to recon .mat file> -o <path and filename of output edgelist> -b [OPTIONAL]<path to blacklist> -f [OPTIONAL]<path to list of filtered metabolties>
 ```
 
 For example just run it as follows:
 
 ```
-python3 parse_recon -i Recon3D_301/Recon3D_301.mat -o recon.tsv -b blacklist_metabolites.tsv
+python3 parse_recon.py -i Recon3D_301/Recon3D_301.mat -o recon.tsv -b blacklist_metabolites.tsv
 ```
 
 and enjoy your edgelist:
