@@ -3,16 +3,23 @@ A Parser for Recon3D that produces Gene Edgelists
 
 This parser produces edgelists where two genes are connected if they share a metabolite. Future versions will include directionality and/or weights.
 
-To avoid very large clusters, it is possible and recommended to provide a blacklist to filter out very common metabolites like h2o.
-The blacklist is used as prefixes, so ```h2o``` would also filter ```h2o2```, if you want to prevent that explicitely enter ```h20[``` with the opening square bracket.
+To avoid very large clusters, it is possible and recommended to provide a blacklist to filter out very common metabolites like ```h2o```.
+The blacklist is used as prefixes, so ```h2o``` would also filter ```h2o2```, if you want to prevent that explicitely enter ```h2o[``` with the opening square bracket.
 
-## Download Recon3D
+## Dependencies
+
+```
+numpy
+scipy
+```
+
+## 1. Download Recon3D
 
 ```
 ./download.sh
 ```
 
-## Run Parser
+## 2. Run Parser
 
 ```
 python3 parse_recon.py -i <path to recon .mat file> -o <path and filename of output edgelist> -b [OPTIONAL]<path to blacklist> -f [OPTIONAL]<path to list of filtered metabolties>
