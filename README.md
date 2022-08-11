@@ -6,6 +6,10 @@ This parser produces edgelists where two genes are connected if they share a met
 To avoid very large clusters, it is possible and recommended to provide a blacklist to filter out very common metabolites like ```h2o```.
 The blacklist is used as prefixes, so ```h2o``` would also filter ```h2o2```, if you want to prevent that explicitely enter ```h2o[``` with the opening square bracket.
 
+## Shortcut
+
+If you are fine with the selection of blacklisted metabolites in ```blacklist_metabolites.tsv```, you can go ahead and directly use the edgelist that is stored at ```data/recon.tsv```.
+
 ## Dependencies
 
 ```
