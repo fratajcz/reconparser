@@ -48,3 +48,19 @@ EntrezA	EntrezB	Metabolite
 10840	441024	10fthf[c]
 ...
 ```
+
+## 3. Additional Options
+
+### Ignore Cellular Component
+
+If the ```-c/--ignore-component``` flag is passed, then the edges will be filtered for multiple occurrences of (GeneA, GeneB, Metabolite) if two such edges have the same Metabolite, but in different cellular components (such as ```h2o[c]``` and ```h2o[l]```). This slightly reduces the number of edges.
+
+### Directed Network
+
+If the ```-d/--use-direction``` flag is passed, then the network becomes directed with edges running only from GeneA to GeneB if GeneA produces a metabolite that GeneB consumes. This breaks up the large cliques that the undirected version produces and heavily reduces the number of edges.
+
+## 4. Future Work
+
+### Weighted Network
+
+Weights of edges in the network could reflect the number of reactions in which a gene produces/consumes a metabolite, or the average stochiometry of a metabolite in these reactions or the balanced-ness of the interaction of two genes (i.e. weight is 1 if geneA produces 2 mols of metaboliteX per reaction and geneB consumes 2 mols of metaboliteX per reaction). Due to this ambiguity of meaning, the implementation of weighted edges is postponed.
