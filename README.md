@@ -55,9 +55,30 @@ EntrezA	EntrezB	Metabolite
 
 If the ```-c/--ignore-component``` flag is passed, then the edges will be filtered for multiple occurrences of (GeneA, GeneB, Metabolite) if two such edges have the same Metabolite, but in different cellular components (such as ```h2o[c]``` and ```h2o[l]```). This slightly reduces the number of edges.
 
-### Directed Network
+The edgelist will look like this:
 
-If the ```-d/--use-direction``` flag is passed, then the network becomes directed with edges running only from GeneA to GeneB if GeneA produces a metabolite that GeneB consumes. This breaks up the large cliques that the undirected version produces and heavily reduces the number of edges.
+```
+EntrezA	EntrezB	Metabolite
+4522	123263	10fthf
+10840	2356	10fthf
+2356	10797	10fthf
+2356	286297	10fthf
+10840	2618	10fthf
+286297	123263	10fthf
+2356	441024	10fthf
+```
+
+### Directed Network (average)
+
+If the ```-d/--use-direction-average``` flag is passed, then the network becomes directed with edges running only from GeneA to GeneB if GeneA produces a metabolite that GeneB consumes. This breaks up the large cliques that the undirected version produces and heavily reduces the number of edges.
+
+In this settings, GeneA is considered a producer if it, on average across all participating reactions, produces more units of the metabolite than it consumes. Vice Versa, if it consumes more units than it produces, it is considered a consumer. This is an oversimplification, since it assumes that all reactions happen equally frequently.
+
+### Directed Network (absolute)
+
+If the ```-a/--use-direction-absolute``` flag is passed, then the network becomes directed with edges running only from GeneA to GeneB if GeneA produces a metabolite that GeneB consumes. This breaks up the large cliques that the undirected version produces and heavily reduces the number of edges.
+
+In this settings, GeneA is considered a producer if it produces at least one unit of the metabolite in any reaction it takes part in. Vice Versa, if it consumes at least one unit of the metabolite in any reaction it takes part in, then it is considered a consumer. This means that a gene can be a producer and a consumer of a metabolite at the same time, enabling circular connection patterns (i.e. A->B AND B->A). This setting does not reduce the number of edges as much as the averaging method.
 
 ## 4. Future Work
 
