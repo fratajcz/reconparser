@@ -13,6 +13,8 @@ parser.add_argument('--blacklist', "-b", type=str, default="blacklist_metabolite
                     help='Path to store the edgelist file.')
 parser.add_argument('--filtered', "-f", type=str, default="data/filtered_metabolites.txt",
                     help='Path to store filtered metabolties list.')
+parser.add_argument('--ignore-components', "-c", action='store_true',
+                    help="Wheter component codes ([c], [l], etc.) should be ignored.")
 
 
 
@@ -64,15 +66,35 @@ with open(output_file, "w") as edgelist:
     edgelist.write("{}\t{}\t{}\n".format("EntrezA", "EntrezB", "Metabolite"))
 
 written_edges = 0
+
+if args.ignore_components:
+    all_edges = set()
 for i, col in enumerate(range(genes2metabolites.shape[1])):
     geneset = entrez_ids[genes2metabolites[:, col]].tolist()
     metabolite = metabolites[i][0][0]
+    metabolite = metabolite.split("[")[0]
     if len(geneset) > 0:
         edges = list(combinations(geneset, 2))
         written_edges += len(edges)
         with open(output_file, "a") as edgelist:
             for edge in edges:
-                edgelist.write("{}\t{}\t{}\n".format(edge[0][0][0].split(".")[0], edge[1][0][0].split(".")[0], metabolite))
+                edge_tuple = (edge[0][0][0].split(".")[0], edge[1][0][0].split(".")[0], metabolite)
+                if args.ignore_components:
+                    all_edges.add(edge_tuple)
+                else:
+                    edgelist.write("{}\t{}\t{}\n".format(*edge_tuple))
 
-    if i % 500 == 0:
-        print("Parsed {} out of {} metabolites. Wrote {} Edges.".format(i, genes2metabolites.shape[1], written_edges))
+    if i % 500 == 0 or i == genes2metabolites.shape[1] - 1:
+        verb = "Gathered" if args.ignore_components else "Wrote"
+        print("Parsed {} out of {} metabolites. {} {} Edges.".format(i, genes2metabolites.shape[1], verb, written_edges))
+
+if args.ignore_components:
+    with open(output_file, "a") as edgelist:
+        all_edges = list(all_edges)
+        all_edges.sort(key=lambda x: x[2])
+        
+        for i, edge in enumerate(all_edges):
+            edgelist.write("{}\t{}\t{}\n".format(*edge))
+
+            if i % 100000 == 0 or i == len(all_edges) - 1:
+                print("Written {} out of {} deduplicated Edges.".format(i, len(all_edges)))
