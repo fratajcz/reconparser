@@ -15,8 +15,12 @@ parser.add_argument('--filtered', "-f", type=str, default="data/filtered_metabol
                     help='Path to store filtered metabolties list.')
 parser.add_argument('--ignore-components', "-c", action='store_true',
                     help="Wheter component codes ([c], [l], etc.) should be ignored.")
-parser.add_argument('--use_direction', "-d", action='store_true',
-                    help="Adds an edge from A to B only if A produces what B consumes.")
+parser.add_argument('--use_direction-average', "-d", action='store_true',
+                    help="Adds an edge from A to B only if A produces what B consumes (on average).\n" +
+                         "This setting does not produce circular connections (i.e. A->B AND B->A).")
+parser.add_argument('--use_direction-absolute', "-a", action='store_true',
+                    help="Adds an edge from A to B only if A produces what B consumes (at least once).\n" +
+                         "This setting can produce circular connections (i.e. A->B AND B->A).")
 parser.add_argument('--use_weights', "-w", action='store_true',
                     help="Adds an additional column 'Weight' which displays stochiometry. NOT IMPLEMENTED")
 
@@ -79,23 +83,45 @@ with open(filtered_list, "w") as file:
     for metabolite in filtered_metabolites:
         file.writelines("{}\n".format(metabolite[0][0]))
 
-genes2metabolites = (metabolites2reactions * reactions2genes).transpose()
+if args.use_direction_absolute:
+    producing_metabolites2reactions = metabolites2reactions.copy()
+    consuming_metabolites2reactions = metabolites2reactions.copy()
+    producing_metabolites2reactions[producing_metabolites2reactions < 0] = 0
+    consuming_metabolites2reactions[consuming_metabolites2reactions > 0] = 0
+    producing_genes2metabolites = (producing_metabolites2reactions * reactions2genes).transpose()
+    consuming_genes2metabolites = (consuming_metabolites2reactions * reactions2genes).transpose()
+    num_metabolites = producing_genes2metabolites.shape[1]
+else:
+    genes2metabolites = (metabolites2reactions * reactions2genes).transpose()
+    num_metabolites = genes2metabolites.shape[1]
 
-if not args.use_direction:
+
+use_direction = args.use_direction_absolute or args.use_direction_average
+
+if not use_direction:
     if not args.use_weights:
         genes2metabolites[genes2metabolites != 0] = 1
     genes2metabolites = genes2metabolites.astype(np.bool8)
-else:
-    producing_genes2metabolites = genes2metabolites.copy().astype(np.bool8)
-    consuming_genes2metabolites = genes2metabolites.copy().astype(np.bool8)
+elif args.use_direction_average:
+    if args.use_direction_average:
+        producing_genes2metabolites = genes2metabolites.copy().astype(np.bool8)
+        consuming_genes2metabolites = genes2metabolites.copy().astype(np.bool8)
 
     if not args.use_weights:
-        producing_genes2metabolites[genes2metabolites > 0] = 1
-    producing_genes2metabolites[genes2metabolites <= 0] = 0
+        producing_genes2metabolites[producing_genes2metabolites > 0] = 1
+    producing_genes2metabolites[producing_genes2metabolites < 0] = 0
 
     if not args.use_weights:
-        consuming_genes2metabolites[genes2metabolites < 0] = 1
-    consuming_genes2metabolites[genes2metabolites >= 0] = 0
+        consuming_genes2metabolites[consuming_genes2metabolites < 0] = 1
+    consuming_genes2metabolites[consuming_genes2metabolites > 0] = 0
+elif args.use_direction_absolute:
+
+    if not args.use_weights:
+        producing_genes2metabolites[producing_genes2metabolites > 0] = 1
+        consuming_genes2metabolites[consuming_genes2metabolites < 0] = 1
+
+    producing_genes2metabolites = producing_genes2metabolites.astype(np.bool8)
+    consuming_genes2metabolites = consuming_genes2metabolites.astype(np.bool8)
 
 with open(output_file, "w") as edgelist:
     edgelist.write(edge_template.format(*file_header))
@@ -105,9 +131,9 @@ written_edges = 0
 if args.ignore_components:
     all_edges = set()
 
-for i, col in enumerate(range(genes2metabolites.shape[1])):
+for i, col in enumerate(range(num_metabolites)):
 
-    if not args.use_direction:
+    if not use_direction:
         geneset = entrez_ids[genes2metabolites[:, col]].tolist()
         not_empty = len(geneset) > 0
         genesets = [geneset]
@@ -135,9 +161,9 @@ for i, col in enumerate(range(genes2metabolites.shape[1])):
                 else:
                     edgelist.write(edge_template.format(*edge_tuple))
 
-    if i % 500 == 0 or i == genes2metabolites.shape[1] - 1:
+    if i % 500 == 0 or i == num_metabolites - 1:
         verb = "Gathered" if args.ignore_components else "Wrote"
-        print("Parsed {} out of {} metabolites. {} {} Edges.".format(i, genes2metabolites.shape[1], verb, written_edges))
+        print("Parsed {} out of {} metabolites. {} {} Edges.".format(i, num_metabolites, verb, written_edges))
 
 if args.ignore_components:
     with open(output_file, "a") as edgelist:
